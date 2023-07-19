@@ -5,6 +5,7 @@ import com.example.postandreplyservice.domain.Post;
 import com.example.postandreplyservice.dto.PostUpdateRequest;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
+import com.example.postandreplyservice.service.remote.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,6 @@ public class PostService {
 
     //get all
     public List<Post> getAllPosts(List<GrantedAuthority> authorities) {
-        //postRepository.save(Post.builder().postId("1").title("title1").content("content1").build());
         List<Post> posts = postRepository.findAll();
         List<Post> res = new ArrayList<>();
         //normal user can all published posts
