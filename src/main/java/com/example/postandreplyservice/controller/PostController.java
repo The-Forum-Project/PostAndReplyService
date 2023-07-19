@@ -161,6 +161,11 @@ public class PostController {
         }
     }
 
+    @GetMapping("/{postId}")
+    public ResponseEntity<AllRepliesResponse> getAllReplies(@PathVariable String postId) throws PostNotFoundException {
+        List<PostReply> postReplies = postService.getAllReplies(postId);
+        return ResponseEntity.ok(AllRepliesResponse.builder().postReplyList(postReplies).build());
+    }
 //    @PatchMapping("/posts/{postId}/hide")
 //    //check owner
 //    public ResponseEntity<GeneralResponse> hidePost(@PathVariable String postId) throws PostNotFoundException {

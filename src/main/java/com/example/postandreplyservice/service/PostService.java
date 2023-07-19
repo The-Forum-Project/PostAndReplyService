@@ -219,7 +219,16 @@ public class PostService {
         }
     }
 
+    public List<PostReply> getAllReplies(String postId) throws PostNotFoundException {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if(optionalPost.isPresent()){
+            Post post = optionalPost.get();
+            return post.getPostReplies();
+        }else{
+            throw new PostNotFoundException();
+        }
 
+    }
 
 
     // Other methods for querying, updating, and deleting posts
