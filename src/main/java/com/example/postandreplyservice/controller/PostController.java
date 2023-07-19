@@ -124,11 +124,30 @@ public class PostController {
     }
 
     //can only be modified by post onwer
+    //attachments 如果要修改attachment 增加或删除attachment时
     @PatchMapping("/{postId}")
-    public ResponseEntity<GeneralResponse> updatePost(@PathVariable String postId, @RequestBody UpdatePostRequest updatePostRequest) throws PostNotFoundException, InvalidAuthorityException {
+    public ResponseEntity<GeneralResponse> modifyPost(@PathVariable String postId, @RequestParam(value = "title") String title,
+                                                      @RequestParam(value = "content") String content,
+                                                      @RequestParam(value = "images") MultipartFile[] images,
+                                                      @RequestParam(value = "attachments") MultipartFile[] attachments) throws PostNotFoundException, InvalidAuthorityException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (Long) authentication.getPrincipal();
-        postService.modifyPost(postId, updatePostRequest, userId);
+        List<String> iamgeUrls = null;
+        if(images != null && images.length > 0){
+            ResponseEntity<FileUrlResponse> imagesresponse  = fileService.uploadFiles(images);
+            iamgeUrls = imagesresponse.getBody().getUrls();
+        }
+
+
+        List<String> attachmentUrls = null;
+        if(attachments != null && attachments.length > 0){
+            ResponseEntity<FileUrlResponse> attachmentResponse = fileService.uploadFiles(attachments);
+            attachmentUrls = attachmentResponse.getBody().getUrls();
+        }
+
+
+        postService.modifyPost(postId,title
+                , content, attachmentUrls, iamgeUrls, userId);
         return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Post modified").build());
     }
 

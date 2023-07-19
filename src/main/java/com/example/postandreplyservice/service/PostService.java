@@ -21,7 +21,6 @@ import java.util.function.Predicate;
 @Service
 public class PostService {
     private final PostRepository postRepository;
-
     @Autowired
     public PostService(PostRepository postRepository) {
         this.postRepository = postRepository;
@@ -111,37 +110,6 @@ public class PostService {
             throw new PostNotFoundException();
         }
     }
-
-    public void modifyPost(String postId, UpdatePostRequest updatePostRequest, Long userId) throws PostNotFoundException, InvalidAuthorityException {
-
-        Optional<Post> postOptional = postRepository.findById(postId);
-
-        if (postOptional.isPresent()) {
-            Post post = postOptional.get();
-            if(post.getUserId() != userId){
-                throw new InvalidAuthorityException();
-            }
-            if (updatePostRequest.getTitle() != null) {
-                post.setTitle(updatePostRequest.getTitle());
-            }
-            if (updatePostRequest.getContent() != null) {
-                post.setContent(updatePostRequest.getContent());
-            }
-            if (updatePostRequest.getImages() != null) {
-                post.setImages(updatePostRequest.getImages());
-            }
-            if (updatePostRequest.getAttachments() != null) {
-                post.setAttachments(updatePostRequest.getAttachments());
-            }
-
-            post.setDateModified(new Date());
-            postRepository.save(post);
-        } else {
-            throw new PostNotFoundException();
-        }
-
-    }
-
     public void replyToPost(String postId, ReplyRequest postReply, Long userId) throws PostNotFoundException {
 
         Optional<Post> postOptional = postRepository.findById(postId);
@@ -225,6 +193,37 @@ public class PostService {
             Post post = optionalPost.get();
             return post.getPostReplies();
         }else{
+            throw new PostNotFoundException();
+        }
+
+    }
+
+    public void modifyPost(String postId, String title, String content, List<String> attachmentUrls, List<String> iamgeUrls, Long userId) throws InvalidAuthorityException, PostNotFoundException {
+
+        Optional<Post> postOptional = postRepository.findById(postId);
+
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            if(post.getUserId() != userId){
+                throw new InvalidAuthorityException();
+            }
+            if (title != null) {
+                post.setTitle(title);
+            }
+            if (content != null) {
+                post.setContent(content);
+            }
+            if (iamgeUrls != null) {
+
+                post.setImages(iamgeUrls);
+            }
+            if (attachmentUrls != null) {
+                post.setAttachments(attachmentUrls);
+            }
+
+            post.setDateModified(new Date());
+            postRepository.save(post);
+        } else {
             throw new PostNotFoundException();
         }
 
