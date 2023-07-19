@@ -1,6 +1,7 @@
 package com.example.postandreplyservice.controller;
 
 import com.example.postandreplyservice.domain.Post;
+import com.example.postandreplyservice.domain.PostReply;
 import com.example.postandreplyservice.dto.*;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -52,7 +54,7 @@ public class PostController {
                 .status("published")
                 .dateCreated(new Date())
                 .dateModified(new Date())
-                .postReplies(null)
+                .postReplies(new ArrayList<>())
                 .build();
 
         //upload any images to S3
@@ -89,20 +91,21 @@ public class PostController {
     }
 
     //TODO: do we need check authority here? Everybody can see the post if this post not hidden, unpublished or deleted.
+    //true does not need to check whether this user is the owner of the post
     @GetMapping("/post/{postId}")
     public ResponseEntity<PostResonse> getPostById(@PathVariable String postId) throws PostNotFoundException, InvalidAuthorityException {
         //need to check this user has the authority to see this post
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (Long) authentication.getPrincipal();
         Post post = postService.getPostById(postId);
-        if(post == null){
-            throw new PostNotFoundException();
-        }else{
-            if(post.getUserId() != userId){
-                throw new InvalidAuthorityException();
-            }
-            return ResponseEntity.ok(PostResonse.builder().post(post).build());
-        }
+        return ResponseEntity.ok(PostResonse.builder().post(post).build());
+//        if(post == null){
+//            throw new PostNotFoundException();
+//        }else{
+//            if(post.getUserId() != userId){
+//                throw new InvalidAuthorityException();
+//            }
+//        }
     }
     //use this endpoint in user profile page
     @GetMapping("/posts/{userId}")
@@ -118,6 +121,44 @@ public class PostController {
         List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
         postService.updatePost(postId, request, userId, authorities);
         return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Status updated").build());
+    }
+
+    //can only be modified by post onwer
+    @PatchMapping("/{postId}")
+    public ResponseEntity<GeneralResponse> updatePost(@PathVariable String postId, @RequestBody UpdatePostRequest updatePostRequest) throws PostNotFoundException, InvalidAuthorityException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) authentication.getPrincipal();
+        postService.modifyPost(postId, updatePostRequest, userId);
+        return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Post modified").build());
+    }
+
+    //reply to a post, only normal user or admin can reply
+    @PatchMapping("/{postId}/replies")
+    public ResponseEntity<GeneralResponse> replyToPost(@PathVariable String postId, @RequestBody ReplyRequest replyRequest) throws InvalidAuthorityException, PostNotFoundException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) authentication.getPrincipal();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        if(authorities.stream().anyMatch(authority -> authority.getAuthority().equals("normal"))){
+            postService.replyToPost(postId, replyRequest, userId);
+            return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Replied a post").build());
+        }else{
+            throw new InvalidAuthorityException();
+        }
+    }
+
+    //reply to a reply, only normal user or admin can reply
+    @PatchMapping("/{postId}/replies/{idx}/subreplies")
+    public ResponseEntity<GeneralResponse> replyToReply(@PathVariable String postId, @PathVariable int idx, @RequestBody ReplyRequest subReply) throws InvalidAuthorityException, PostNotFoundException {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) authentication.getPrincipal();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        if(authorities.stream().anyMatch(authority -> authority.getAuthority().equals("normal"))){
+            postService.replyToReply(postId, idx, subReply,userId);
+            return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Replied a reply").build());
+        }else{
+            throw new InvalidAuthorityException();
+        }
     }
 
 //    @PatchMapping("/posts/{postId}/hide")

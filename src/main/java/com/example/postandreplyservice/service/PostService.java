@@ -2,10 +2,13 @@ package com.example.postandreplyservice.service;
 
 import com.example.postandreplyservice.dao.PostRepository;
 import com.example.postandreplyservice.domain.Post;
+import com.example.postandreplyservice.domain.PostReply;
+import com.example.postandreplyservice.domain.SubReply;
 import com.example.postandreplyservice.dto.PostUpdateRequest;
+import com.example.postandreplyservice.dto.ReplyRequest;
+import com.example.postandreplyservice.dto.UpdatePostRequest;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
-import com.example.postandreplyservice.service.remote.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -50,6 +53,12 @@ public class PostService {
                 }
             }
         }
+//        Collections.sort(res, new Comparator<Post>() {
+//            @Override
+//            public int compare(Post o1, Post o2) {
+//                return o2.getDateCreated().compareTo(o1.getDateCreated());
+//            }
+//        });
         return res;
     }
 
@@ -103,6 +112,80 @@ public class PostService {
         }
     }
 
+    public void modifyPost(String postId, UpdatePostRequest updatePostRequest, Long userId) throws PostNotFoundException, InvalidAuthorityException {
+
+        Optional<Post> postOptional = postRepository.findById(postId);
+
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            if(post.getUserId() != userId){
+                throw new InvalidAuthorityException();
+            }
+            if (updatePostRequest.getTitle() != null) {
+                post.setTitle(updatePostRequest.getTitle());
+            }
+            if (updatePostRequest.getContent() != null) {
+                post.setContent(updatePostRequest.getContent());
+            }
+            if (updatePostRequest.getImages() != null) {
+                post.setImages(updatePostRequest.getImages());
+            }
+            if (updatePostRequest.getAttachments() != null) {
+                post.setAttachments(updatePostRequest.getAttachments());
+            }
+
+            post.setDateModified(new Date());
+            postRepository.save(post);
+        } else {
+            throw new PostNotFoundException();
+        }
+
+    }
+
+    public void replyToPost(String postId, ReplyRequest postReply, Long userId) throws PostNotFoundException {
+
+        Optional<Post> postOptional = postRepository.findById(postId);
+
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            PostReply newReply = new PostReply();
+
+            newReply.setUserId(userId);
+            newReply.setComment(postReply.getComment());
+            newReply.setIsActive(true);
+            newReply.setDateCreated(new Date());
+            newReply.setSubReplies(new ArrayList<>());
+
+            post.getPostReplies().add(newReply);
+            postRepository.save(post);
+        } else {
+            throw new PostNotFoundException();
+        }
+
+    }
+
+    public void replyToReply(String postId, int idx, ReplyRequest subReply, Long userId) throws PostNotFoundException {
+
+        Optional<Post> postOptional = postRepository.findById(postId);
+
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            PostReply reply = post.getPostReplies().get(idx);
+            SubReply newReply = new SubReply();
+
+            newReply.setUserId(userId);
+            newReply.setComment(subReply.getComment());
+            newReply.setIsActive(true);
+            newReply.setDateCreated(new Date());
+
+            reply.getSubReplies().add(newReply);
+            postRepository.save(post);
+        } else {
+            throw new PostNotFoundException();
+        }
+    }
+
+
     public void hidePost(String postId) throws PostNotFoundException {
         Optional<Post> optionalPost = postRepository.findById(postId);
         if(optionalPost.isPresent()){
@@ -135,5 +218,9 @@ public class PostService {
             throw new PostNotFoundException();
         }
     }
+
+
+
+
     // Other methods for querying, updating, and deleting posts
 }
