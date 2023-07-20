@@ -100,9 +100,13 @@ public class PostService {
                     throw new InvalidAuthorityException();
                 }
             }
-            //check whether need to update isArchived
+            //check whether need to update isArchived only owner can change arcghived
             if(request.getIsArchived() != null){
-                post.setIsArchived(request.getIsArchived());
+                if(userId == post.getUserId()){
+                    post.setIsArchived(request.getIsArchived());
+                }else {
+                    throw new InvalidAuthorityException();
+                }
             }
             postRepository.save(post);
         }else{
