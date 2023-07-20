@@ -6,7 +6,6 @@ import com.example.postandreplyservice.dto.*;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
 import com.example.postandreplyservice.service.PostService;
-import com.example.postandreplyservice.service.remote.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,17 +17,17 @@ import java.util.List;
 @RestController
 public class PostController {
     private PostService postService;
-    private FileService fileService;
     @Autowired
     public void setPostService(PostService postService) {
         this.postService = postService;
     }
 
-    @Autowired
-    public void setFileService(FileService fileService) {
-        this.fileService = fileService;
+    //user for microservice
+    @PostMapping(value = "/posts")
+    public ResponseEntity<GeneralResponse> createPost(@RequestBody Post post){
+        postService.savePost(post);
+        return ResponseEntity.ok(GeneralResponse.builder().message("Post created successfully").statusCode("200").build());
     }
-
     //move to PostCompositeService
 //    @PostMapping(value = "/posts")
 //    public ResponseEntity<GeneralResponse> createPost(
@@ -84,6 +83,13 @@ public class PostController {
         return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
     }
 
+    //user for microservice
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<PostResonse> getPostById(@PathVariable String postId) throws PostNotFoundException {
+        Post post = postService.getPostById(postId);
+        return ResponseEntity.ok(PostResonse.builder().post(post).build());
+    }
+
     //move to PostCompositeService
     //TODO: do we need check authority here? Everybody can see the post if this post not hidden, unpublished or deleted.
     //true does not need to check whether this user is the owner of the post
@@ -117,6 +123,7 @@ public class PostController {
         postService.updatePost(postId, request, userId, authorities);
         return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Status updated").build());
     }
+
 
     //can only be modified by post onwer
     //attachments 如果要修改attachment 增加或删除attachment时

@@ -26,13 +26,13 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-//    public void savePost(Post post) {
-//        postRepository.save(post);
-//    }
+    public void savePost(Post post) {
+        postRepository.save(post);
+    }
 //
-//    public Post getPostById(String id) {
-//        return postRepository.findById(id).orElse(null);
-//    }
+    public Post getPostById(String id) {
+        return postRepository.findById(id).orElse(null);
+    }
 
     //get all
     public List<Post> getAllPosts(List<GrantedAuthority> authorities) {
