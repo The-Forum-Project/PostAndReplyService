@@ -180,6 +180,7 @@ public class PostController {
         }
     }
 
+    //do we need this controller? We could get the all replies by post. Post reply is a list in post.
     @GetMapping("/{postId}")
     public ResponseEntity<AllRepliesResponse> getAllReplies(@PathVariable String postId) throws PostNotFoundException {
         List<PostReply> postReplies = postService.getAllReplies(postId);

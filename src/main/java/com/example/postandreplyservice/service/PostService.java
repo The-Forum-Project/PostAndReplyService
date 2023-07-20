@@ -92,6 +92,12 @@ public class PostService {
             allowedStatusChanges.put("Published->Hidden", userIdOfPost::equals);
             allowedStatusChanges.put("Hidden->Published", userIdOfPost::equals);
             allowedStatusChanges.put("Unpublished->Published", userIdOfPost::equals);
+
+            //publish to delete
+            //allowedStatusChanges.put("Published->Deleted", userIdOfPost::equals);
+            //banned to delete
+            //allowedStatusChanges.put("Banned->Deleted", userIdOfPost::equals);
+
             allowedStatusChanges.put("Published->Banned", adminCheck);
             allowedStatusChanges.put("Deleted->Published", adminCheck);
             allowedStatusChanges.put("Banned->Published", adminCheck);
@@ -99,6 +105,8 @@ public class PostService {
             Predicate<Long> statusChangeCheck = allowedStatusChanges.get(oldStatus + "->" + newStatus);
             if (statusChangeCheck != null && statusChangeCheck.test(userId)) {
                 // Logic to change the status
+                //newStatus and isArchived might be need to be checked separately and check if null
+                //what if user only change isArchived?
                 post.setStatus(newStatus);
                 post.setIsArchived(request.getIsArchived());
                 postRepository.save(post);
