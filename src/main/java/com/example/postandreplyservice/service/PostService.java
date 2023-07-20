@@ -26,13 +26,13 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public void savePost(Post post) {
-        postRepository.save(post);
-    }
-
-    public Post getPostById(String id) {
-        return postRepository.findById(id).orElse(null);
-    }
+//    public void savePost(Post post) {
+//        postRepository.save(post);
+//    }
+//
+//    public Post getPostById(String id) {
+//        return postRepository.findById(id).orElse(null);
+//    }
 
     //get all
     public List<Post> getAllPosts(List<GrantedAuthority> authorities) {
@@ -206,36 +206,36 @@ public class PostService {
 
     }
 
-    public void modifyPost(String postId, String title, String content, List<String> attachmentUrls, List<String> iamgeUrls, Long userId) throws InvalidAuthorityException, PostNotFoundException {
-
-        Optional<Post> postOptional = postRepository.findById(postId);
-
-        if (postOptional.isPresent()) {
-            Post post = postOptional.get();
-            if(post.getUserId() != userId){
-                throw new InvalidAuthorityException();
-            }
-            if (title != null) {
-                post.setTitle(title);
-            }
-            if (content != null) {
-                post.setContent(content);
-            }
-            if (iamgeUrls != null) {
-
-                post.setImages(iamgeUrls);
-            }
-            if (attachmentUrls != null) {
-                post.setAttachments(attachmentUrls);
-            }
-
-            post.setDateModified(new Date());
-            postRepository.save(post);
-        } else {
-            throw new PostNotFoundException();
-        }
-
-    }
+//    public void modifyPost(String postId, String title, String content, List<String> attachmentUrls, List<String> iamgeUrls, Long userId) throws InvalidAuthorityException, PostNotFoundException {
+//
+//        Optional<Post> postOptional = postRepository.findById(postId);
+//
+//        if (postOptional.isPresent()) {
+//            Post post = postOptional.get();
+//            if(post.getUserId() != userId){
+//                throw new InvalidAuthorityException();
+//            }
+//            if (title != null) {
+//                post.setTitle(title);
+//            }
+//            if (content != null) {
+//                post.setContent(content);
+//            }
+//            if (iamgeUrls != null) {
+//
+//                post.setImages(iamgeUrls);
+//            }
+//            if (attachmentUrls != null) {
+//                post.setAttachments(attachmentUrls);
+//            }
+//
+//            post.setDateModified(new Date());
+//            postRepository.save(post);
+//        } else {
+//            throw new PostNotFoundException();
+//        }
+//
+//    }
 
 
     // Other methods for querying, updating, and deleting posts
