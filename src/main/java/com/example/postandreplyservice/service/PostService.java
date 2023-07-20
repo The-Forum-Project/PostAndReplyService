@@ -68,52 +68,43 @@ public class PostService {
     public void updatePost(String postId, PostUpdateRequest request, Long userId, List<GrantedAuthority> authorities) throws PostNotFoundException, InvalidAuthorityException {
         Optional<Post> optionalPostpost = postRepository.findById(postId);
         String newStatus = request.getStatus();
+
         if(optionalPostpost.isPresent()){
             Post post = optionalPostpost.get();
-            String oldStatus = post.getStatus();
-            Long userIdOfPost = post.getUserId();
-//            if (oldStatus.equals("Published") && newStatus.equals("Hidden") && userId.equals(userIdOfPost)) {
-//
-//            } else if (oldStatus.equals("Hidden") && newStatus.equals("Published") && userId.equals(userIdOfPost)) {
-//
-//            } else if (oldStatus.equals("Unpublished") && newStatus.equals("Published") && userId.equals(userIdOfPost)) {
-//
-//            } else if (oldStatus.equals("Published") && newStatus.equals("Banned") && (authorities.stream().anyMatch(authority -> authority.getAuthority().equals("admin")))) {
-//
-//            } else if (oldStatus.equals("Deleted") && newStatus.equals("Published") && (authorities.stream().anyMatch(authority -> authority.getAuthority().equals("admin")))) {
-//
-//            } else if (oldStatus.equals("Banned") && newStatus.equals("Published") && (authorities.stream().anyMatch(authority -> authority.getAuthority().equals("admin")))) {
-//
-//            } else {
-//                throw new InvalidAuthorityException();
-//            }
-            Predicate<Long> adminCheck = id -> authorities.stream().anyMatch(authority -> authority.getAuthority().equals("admin"));
-            Map<String, Predicate<Long>> allowedStatusChanges = new HashMap<>();
-            allowedStatusChanges.put("Published->Hidden", userIdOfPost::equals);
-            allowedStatusChanges.put("Hidden->Published", userIdOfPost::equals);
-            allowedStatusChanges.put("Unpublished->Published", userIdOfPost::equals);
+            //check whether need to  update the status
+            if(newStatus != null){
+                String oldStatus = post.getStatus();
+                Long userIdOfPost = post.getUserId();
+                Predicate<Long> adminCheck = id -> authorities.stream().anyMatch(authority -> authority.getAuthority().equals("admin"));
+                Map<String, Predicate<Long>> allowedStatusChanges = new HashMap<>();
+                allowedStatusChanges.put("published->hidden", userIdOfPost::equals);
+                allowedStatusChanges.put("hidden->published", userIdOfPost::equals);
+                allowedStatusChanges.put("unpublished->published", userIdOfPost::equals);
 
-            //publish to delete
-            //allowedStatusChanges.put("Published->Deleted", userIdOfPost::equals);
-            //banned to delete
-            //allowedStatusChanges.put("Banned->Deleted", userIdOfPost::equals);
+                //publish to delete
+                //allowedStatusChanges.put("Published->Deleted", userIdOfPost::equals);
+                //banned to delete
+                //allowedStatusChanges.put("Banned->Deleted", userIdOfPost::equals);
 
-            allowedStatusChanges.put("Published->Banned", adminCheck);
-            allowedStatusChanges.put("Deleted->Published", adminCheck);
-            allowedStatusChanges.put("Banned->Published", adminCheck);
+                allowedStatusChanges.put("published->banned", adminCheck);
+                allowedStatusChanges.put("deleted->published", adminCheck);
+                allowedStatusChanges.put("banned->published", adminCheck);
 
-            Predicate<Long> statusChangeCheck = allowedStatusChanges.get(oldStatus + "->" + newStatus);
-            if (statusChangeCheck != null && statusChangeCheck.test(userId)) {
-                // Logic to change the status
-                //newStatus and isArchived might be need to be checked separately and check if null
-                //what if user only change isArchived?
-                post.setStatus(newStatus);
-                post.setIsArchived(request.getIsArchived());
-                postRepository.save(post);
-            } else {
-                throw new InvalidAuthorityException();
+                Predicate<Long> statusChangeCheck = allowedStatusChanges.get(oldStatus + "->" + newStatus);
+                if (statusChangeCheck != null && statusChangeCheck.test(userId)) {
+                    // Logic to change the status
+                    //newStatus and isArchived might be need to be checked separately and check if null
+                    //what if user only change isArchived?
+                    post.setStatus(newStatus);
+                } else {
+                    throw new InvalidAuthorityException();
+                }
             }
-
+            //check whether need to update isArchived
+            if(request.getIsArchived() != null){
+                post.setIsArchived(request.getIsArchived());
+            }
+            postRepository.save(post);
         }else{
             throw new PostNotFoundException();
         }
