@@ -72,10 +72,6 @@ public class PostController {
     @GetMapping("/posts")
     public ResponseEntity<AllPostsResponse> getAllPosts() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long userId = (Long) authentication.getPrincipal();
-//        System.out.println("userId" + userId);
-//        System.out.println("authorities: " + authentication.getAuthorities());
-
         List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
         //normal user can all published posts and his own posts
         //admin user can see all posts except all the hidden and unpublished posts
@@ -91,7 +87,6 @@ public class PostController {
     }
 
     //move to PostCompositeService
-    //TODO: do we need check authority here? Everybody can see the post if this post not hidden, unpublished or deleted.
     //true does not need to check whether this user is the owner of the post
 //    @GetMapping("/post/{postId}")
 //    public ResponseEntity<PostResonse> getPostById(@PathVariable String postId) throws PostNotFoundException, InvalidAuthorityException {
@@ -216,4 +211,18 @@ public class PostController {
 //        postService.banPost(postId);
 //        return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Post hidden.").build());
 //    }
+
+    //top 3 posts
+    @GetMapping("/posts/{id}/top")
+    public ResponseEntity<AllPostsResponse> getUserPostsTop3RepliesCount(@PathVariable Long id) {
+        List<Post> posts = postService.getTop3RepliesPost(id);
+        return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
+    }
+
+    //list all drafts
+    @GetMapping("/posts/{id}/drafts")
+    public ResponseEntity<AllPostsResponse> getUserDrafts(@PathVariable Long id) {
+        List<Post> posts = postService.getAllDraftsByUserId(id);
+        return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
+    }
 }

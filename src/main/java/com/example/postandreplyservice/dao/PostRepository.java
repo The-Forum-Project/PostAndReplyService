@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PostRepository extends MongoRepository<Post, String> {
     List<Post> findByUserId(Long userId);
+
+    List<Post> findByUserIdAndStatus(Long userId, String status);
 }

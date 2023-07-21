@@ -10,13 +10,16 @@ import com.example.postandreplyservice.dto.UpdatePostRequest;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -65,6 +68,23 @@ public class PostService {
         return postRepository.findByUserId(userId);
     }
 
+    public List<Post> getTop3RepliesPost(Long userId){
+        List<Post> all = postRepository.findByUserIdAndStatus(userId, "published");
+        System.out.println(all);
+        List<Post> sortedPosts = all.stream()
+                .sorted(Comparator.comparingInt(post -> {
+                    List<PostReply> postReplies = post.getPostReplies();
+                    return postReplies != null ? postReplies.size() : 0;
+                }))
+                .collect(Collectors.toList());
+        Collections.reverse(sortedPosts);
+        return sortedPosts.subList(0, Math.min(3, sortedPosts.size()));
+    }
+
+    public List<Post> getAllDraftsByUserId(Long userId) {
+        return postRepository.findByUserIdAndStatus(userId, "unpublished");
+    }
+
     public void updatePost(String postId, PostUpdateRequest request, Long userId, List<GrantedAuthority> authorities) throws PostNotFoundException, InvalidAuthorityException {
         Optional<Post> optionalPostpost = postRepository.findById(postId);
         String newStatus = request.getStatus();
@@ -92,9 +112,6 @@ public class PostService {
 
                 Predicate<Long> statusChangeCheck = allowedStatusChanges.get(oldStatus + "->" + newStatus);
                 if (statusChangeCheck != null && statusChangeCheck.test(userId)) {
-                    // Logic to change the status
-                    //newStatus and isArchived might be need to be checked separately and check if null
-                    //what if user only change isArchived?
                     post.setStatus(newStatus);
                 } else {
                     throw new InvalidAuthorityException();
@@ -113,8 +130,12 @@ public class PostService {
             throw new PostNotFoundException();
         }
     }
-    public void replyToPost(String postId, ReplyRequest postReply, Long userId) throws PostNotFoundException {
-
+    public void replyToPost(String postId, ReplyRequest postReply, Long userId) throws PostNotFoundException, InvalidAuthorityException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        if (authorities.stream().noneMatch(authority -> authority.getAuthority().equals("normal"))) {
+            throw new InvalidAuthorityException();
+        }
         Optional<Post> postOptional = postRepository.findById(postId);
 
         if (postOptional.isPresent()) {
@@ -135,8 +156,12 @@ public class PostService {
 
     }
 
-    public void replyToReply(String postId, int idx, ReplyRequest subReply, Long userId) throws PostNotFoundException {
-
+    public void replyToReply(String postId, int idx, ReplyRequest subReply, Long userId) throws PostNotFoundException, InvalidAuthorityException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        if (authorities.stream().noneMatch(authority -> authority.getAuthority().equals("normal"))) {
+            throw new InvalidAuthorityException();
+        }
         Optional<Post> postOptional = postRepository.findById(postId);
 
         if (postOptional.isPresent()) {
