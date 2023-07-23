@@ -85,6 +85,15 @@ public class PostService {
         return postRepository.findByUserIdAndStatus(userId, "unpublished");
     }
 
+    public List<Post> getAllDeletedPosts() throws InvalidAuthorityException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        if (authorities.stream().noneMatch(authority -> authority.getAuthority().equals("admin"))) {
+            throw new InvalidAuthorityException();
+        }
+        return postRepository.findByStatus("deleted");
+    }
+
     public void updatePost(String postId, PostUpdateRequest request, Long userId, List<GrantedAuthority> authorities) throws PostNotFoundException, InvalidAuthorityException {
         Optional<Post> optionalPostpost = postRepository.findById(postId);
         String newStatus = request.getStatus();
@@ -102,9 +111,9 @@ public class PostService {
                 allowedStatusChanges.put("unpublished->published", userIdOfPost::equals);
 
                 //publish to delete
-                allowedStatusChanges.put("Published->Deleted", userIdOfPost::equals);
+                allowedStatusChanges.put("published->deleted", userIdOfPost::equals);
                 //banned to delete
-                allowedStatusChanges.put("Banned->Deleted", userIdOfPost::equals);
+                allowedStatusChanges.put("banned->deleted", userIdOfPost::equals);
 
                 allowedStatusChanges.put("published->banned", adminCheck);
                 allowedStatusChanges.put("deleted->published", adminCheck);

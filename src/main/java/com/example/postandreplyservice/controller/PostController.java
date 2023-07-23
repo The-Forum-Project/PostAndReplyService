@@ -225,4 +225,10 @@ public class PostController {
         List<Post> posts = postService.getAllDraftsByUserId(id);
         return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
     }
+
+    @GetMapping("posts/deleted")
+    public ResponseEntity<AllPostsResponse> getAllDeletedPosts() throws InvalidAuthorityException {
+        List<Post> posts = postService.getAllDeletedPosts();
+        return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
+    }
 }
