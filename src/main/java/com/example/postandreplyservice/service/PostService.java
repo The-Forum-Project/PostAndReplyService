@@ -102,9 +102,9 @@ public class PostService {
                 allowedStatusChanges.put("unpublished->published", userIdOfPost::equals);
 
                 //publish to delete
-                //allowedStatusChanges.put("Published->Deleted", userIdOfPost::equals);
+                allowedStatusChanges.put("Published->Deleted", userIdOfPost::equals);
                 //banned to delete
-                //allowedStatusChanges.put("Banned->Deleted", userIdOfPost::equals);
+                allowedStatusChanges.put("Banned->Deleted", userIdOfPost::equals);
 
                 allowedStatusChanges.put("published->banned", adminCheck);
                 allowedStatusChanges.put("deleted->published", adminCheck);
