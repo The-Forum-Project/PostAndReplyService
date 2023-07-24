@@ -108,6 +108,15 @@ public class PostService {
         return postRepository.findByStatus("deleted");
     }
 
+    public List<Post> getAllBannedPosts() throws InvalidAuthorityException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        if (authorities.stream().noneMatch(authority -> authority.getAuthority().equals("admin"))) {
+            throw new InvalidAuthorityException();
+        }
+        return postRepository.findByStatus("banned");
+    }
+
     public void updatePost(String postId, PostUpdateRequest request, Long userId, List<GrantedAuthority> authorities) throws PostNotFoundException, InvalidAuthorityException {
         Optional<Post> optionalPostpost = postRepository.findById(postId);
         String newStatus = request.getStatus();

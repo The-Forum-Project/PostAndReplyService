@@ -233,4 +233,10 @@ public class PostController {
         List<Post> posts = postService.getAllDeletedPosts();
         return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
     }
+
+    @GetMapping("posts/banned")
+    public ResponseEntity<AllPostsResponse> getAllBannedPosts() throws InvalidAuthorityException {
+        List<Post> posts = postService.getAllBannedPosts();
+        return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
+    }
 }
