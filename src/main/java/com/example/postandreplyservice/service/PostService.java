@@ -64,8 +64,22 @@ public class PostService {
         return res;
     }
 
-    public List<Post> getAllPostsByUserId(Long userId) {
-        return postRepository.findByUserId(userId);
+    public List<Post> getAllPostsByUserId(Long userId, List<GrantedAuthority> authorities) {
+        List<Post> posts = postRepository.findByUserId(userId);
+        if(authorities.stream().noneMatch(authority -> authority.getAuthority().equals("admin"))) {
+            //user could only see un-deleted post
+            List<Post> res = new ArrayList<>();
+            for (Post post : posts) {
+                if (!post.getStatus().equals("deleted")
+                        && !post.getStatus().equals("unpublished")) {
+                    res.add(post);
+                }
+            }
+            return res;
+        }else{
+            //admin could see all
+            return posts;
+        }
     }
 
     public List<Post> getTop3RepliesPost(Long userId){

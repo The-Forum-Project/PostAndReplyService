@@ -106,7 +106,9 @@ public class PostController {
     //use this endpoint in user profile page
     @GetMapping("/posts/{userId}")
     public ResponseEntity<AllPostsResponse> getUserPosts(@PathVariable Long userId) {
-        List<Post> posts = postService.getAllPostsByUserId(userId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
+        List<Post> posts = postService.getAllPostsByUserId(userId, authorities);
         return ResponseEntity.ok(AllPostsResponse.builder().posts(posts).build());
     }
 
