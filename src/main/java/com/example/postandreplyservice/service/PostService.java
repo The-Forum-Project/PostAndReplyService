@@ -39,7 +39,7 @@ public class PostService {
 
     //get all
     public List<Post> getAllPosts(List<GrantedAuthority> authorities) {
-        List<Post> posts = postRepository.findAll();
+        List<Post> posts = postRepository.findAllByOrderByDateCreatedDesc();
         List<Post> res = new ArrayList<>();
         //normal user can all published posts
         if(authorities.stream().noneMatch(authority -> authority.getAuthority().equals("admin"))){
