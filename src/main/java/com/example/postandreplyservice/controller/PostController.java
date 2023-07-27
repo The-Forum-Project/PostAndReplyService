@@ -28,45 +28,7 @@ public class PostController {
         postService.savePost(post);
         return ResponseEntity.ok(GeneralResponse.builder().message("Post created successfully").statusCode("200").build());
     }
-    //move to PostCompositeService
-//    @PostMapping(value = "/posts")
-//    public ResponseEntity<GeneralResponse> createPost(
-//            @RequestParam(value = "title") String title,
-//            @RequestParam(value = "content") String content,
-//            @RequestParam(value = "images") MultipartFile[] images,
-//            @RequestParam(value = "attachments") MultipartFile[] attachments) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long userId = (Long) authentication.getPrincipal();
-//
-//        Post post = Post.builder()
-//                .userId(userId)
-//                .title(title)
-//                .content(content)
-//                .isArchived(false)
-//
-//                .status("published")
-//                .dateCreated(new Date())
-//                .dateModified(new Date())
-//                .postReplies(new ArrayList<>())
-//                .build();
-//
-//        //upload any images to S3
-//        //how to change it to correct way?
-//        System.out.println("Build post: " + post);
-//        //MultipartFile[] images = req.getFiles("images").toArray(new MultipartFile[0]);
-//        ResponseEntity<FileUrlResponse> response = fileService.uploadFiles(images);
-//        System.out.println("image urls: " + response.getBody().getUrls());
-//        post.setImages(response.getBody().getUrls());
-//
-//        //upload any attachments to S3
-//        //MultipartFile[] attachments = req.getFiles("attachments").toArray(new MultipartFile[0]);
-//        ResponseEntity<FileUrlResponse> attachmentResponse = fileService.uploadFiles(attachments);
-//        System.out.println("attachment urls: " + attachmentResponse.getBody().getUrls());
-//        post.setAttachments(attachmentResponse.getBody().getUrls());
-//
-//        postService.savePost(post);
-//        return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Post created.").build());
-//    }
+
 
     //in normal user home page and admin home page will use this endpoint.
     @GetMapping("/posts")
@@ -86,23 +48,6 @@ public class PostController {
         return ResponseEntity.ok(PostResonse.builder().post(post).build());
     }
 
-    //move to PostCompositeService
-    //true does not need to check whether this user is the owner of the post
-//    @GetMapping("/post/{postId}")
-//    public ResponseEntity<PostResonse> getPostById(@PathVariable String postId) throws PostNotFoundException, InvalidAuthorityException {
-//        //need to check this user has the authority to see this post
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long userId = (Long) authentication.getPrincipal();
-//        Post post = postService.getPostById(postId);
-//        return ResponseEntity.ok(PostResonse.builder().post(post).build());
-////        if(post == null){
-////            throw new PostNotFoundException();
-////        }else{
-////            if(post.getUserId() != userId){
-////                throw new InvalidAuthorityException();
-////            }
-////        }
-//    }
     //use this endpoint in user profile page
     @GetMapping("/posts/{userId}")
     public ResponseEntity<AllPostsResponse> getUserPosts(@PathVariable Long userId) {
@@ -120,36 +65,6 @@ public class PostController {
         postService.updatePost(postId, request, userId, authorities);
         return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Status updated").build());
     }
-
-
-    //can only be modified by post onwer
-    //attachments 如果要修改attachment 增加或删除attachment时
-    //move to PostCompositeService
-//    @PatchMapping("/{postId}")
-//    public ResponseEntity<GeneralResponse> modifyPost(@PathVariable String postId, @RequestParam(value = "title") String title,
-//                                                      @RequestParam(value = "content") String content,
-//                                                      @RequestParam(value = "images") MultipartFile[] images,
-//                                                      @RequestParam(value = "attachments") MultipartFile[] attachments) throws PostNotFoundException, InvalidAuthorityException {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Long userId = (Long) authentication.getPrincipal();
-//        List<String> iamgeUrls = null;
-//        if(images != null && images.length > 0){
-//            ResponseEntity<FileUrlResponse> imagesresponse  = fileService.uploadFiles(images);
-//            iamgeUrls = imagesresponse.getBody().getUrls();
-//        }
-//
-//
-//        List<String> attachmentUrls = null;
-//        if(attachments != null && attachments.length > 0){
-//            ResponseEntity<FileUrlResponse> attachmentResponse = fileService.uploadFiles(attachments);
-//            attachmentUrls = attachmentResponse.getBody().getUrls();
-//        }
-//
-//
-//        postService.modifyPost(postId,title
-//                , content, attachmentUrls, iamgeUrls, userId);
-//        return ResponseEntity.ok(GeneralResponse.builder().statusCode("200").message("Post modified").build());
-//    }
 
     //reply to a post, only normal user or admin can reply
     @PatchMapping("/{postId}/replies")

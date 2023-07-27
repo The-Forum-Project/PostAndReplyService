@@ -6,7 +6,6 @@ import com.example.postandreplyservice.domain.PostReply;
 import com.example.postandreplyservice.domain.SubReply;
 import com.example.postandreplyservice.dto.PostUpdateRequest;
 import com.example.postandreplyservice.dto.ReplyRequest;
-import com.example.postandreplyservice.dto.UpdatePostRequest;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +54,6 @@ public class PostService {
                 }
             }
         }
-//        Collections.sort(res, new Comparator<Post>() {
-//            @Override
-//            public int compare(Post o1, Post o2) {
-//                return o2.getDateCreated().compareTo(o1.getDateCreated());
-//            }
-//        });
         return res;
     }
 
@@ -118,12 +111,12 @@ public class PostService {
     }
 
     public void updatePost(String postId, PostUpdateRequest request, Long userId, List<GrantedAuthority> authorities) throws PostNotFoundException, InvalidAuthorityException {
-        Optional<Post> optionalPostpost = postRepository.findById(postId);
+        Optional<Post> optionalPost = postRepository.findById(postId);
         String newStatus = request.getStatus();
 
-        if(optionalPostpost.isPresent()){
-            Post post = optionalPostpost.get();
-            //check whether need to  update the status
+        if(optionalPost.isPresent()){
+            Post post = optionalPost.get();
+            //check need to  update the status
             if(newStatus != null){
                 String oldStatus = post.getStatus();
                 Long userIdOfPost = post.getUserId();
@@ -149,9 +142,9 @@ public class PostService {
                     throw new InvalidAuthorityException();
                 }
             }
-            //check whether need to update isArchived only owner can change arcghived
+            //check need to update isArchived only owner can change archived
             if(request.getIsArchived() != null){
-                if(userId == post.getUserId()){
+                if(Objects.equals(userId, post.getUserId())){
                     post.setIsArchived(request.getIsArchived());
                 }else {
                     throw new InvalidAuthorityException();
@@ -171,6 +164,9 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
 
         if (postOptional.isPresent()) {
+            if(postOptional.get().getIsArchived()){
+                throw new InvalidAuthorityException();
+            }
             Post post = postOptional.get();
             PostReply newReply = new PostReply();
 
@@ -197,6 +193,9 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
 
         if (postOptional.isPresent()) {
+            if(postOptional.get().getIsArchived()){
+                throw new InvalidAuthorityException();
+            }
             Post post = postOptional.get();
             PostReply reply = post.getPostReplies().get(idx);
             SubReply newReply = new SubReply();
@@ -257,38 +256,4 @@ public class PostService {
         }
 
     }
-
-//    public void modifyPost(String postId, String title, String content, List<String> attachmentUrls, List<String> iamgeUrls, Long userId) throws InvalidAuthorityException, PostNotFoundException {
-//
-//        Optional<Post> postOptional = postRepository.findById(postId);
-//
-//        if (postOptional.isPresent()) {
-//            Post post = postOptional.get();
-//            if(post.getUserId() != userId){
-//                throw new InvalidAuthorityException();
-//            }
-//            if (title != null) {
-//                post.setTitle(title);
-//            }
-//            if (content != null) {
-//                post.setContent(content);
-//            }
-//            if (iamgeUrls != null) {
-//
-//                post.setImages(iamgeUrls);
-//            }
-//            if (attachmentUrls != null) {
-//                post.setAttachments(attachmentUrls);
-//            }
-//
-//            post.setDateModified(new Date());
-//            postRepository.save(post);
-//        } else {
-//            throw new PostNotFoundException();
-//        }
-//
-//    }
-
-
-    // Other methods for querying, updating, and deleting posts
 }
