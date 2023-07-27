@@ -68,7 +68,7 @@ public class PostController {
 
     //reply to a post, only normal user or admin can reply
     @PatchMapping("/{postId}/replies")
-    public ResponseEntity<GeneralResponse> replyToPost(@PathVariable String postId, @RequestBody ReplyRequest replyRequest) throws InvalidAuthorityException, PostNotFoundException {
+    public ResponseEntity<GeneralResponse> replyToPost(@PathVariable String postId, @RequestBody ReplyRequest replyRequest) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (Long) authentication.getPrincipal();
         List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
@@ -82,7 +82,7 @@ public class PostController {
 
     //reply to a reply, only normal user or admin can reply
     @PatchMapping("/{postId}/replies/{idx}/subreplies")
-    public ResponseEntity<GeneralResponse> replyToReply(@PathVariable String postId, @PathVariable int idx, @RequestBody ReplyRequest subReply) throws InvalidAuthorityException, PostNotFoundException {
+    public ResponseEntity<GeneralResponse> replyToReply(@PathVariable String postId, @PathVariable int idx, @RequestBody ReplyRequest subReply) throws Exception {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (Long) authentication.getPrincipal();

@@ -9,6 +9,7 @@ import com.example.postandreplyservice.dto.ReplyRequest;
 import com.example.postandreplyservice.exception.InvalidAuthorityException;
 import com.example.postandreplyservice.exception.PostNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -155,7 +156,7 @@ public class PostService {
             throw new PostNotFoundException();
         }
     }
-    public void replyToPost(String postId, ReplyRequest postReply, Long userId) throws PostNotFoundException, InvalidAuthorityException {
+    public void replyToPost(String postId, ReplyRequest postReply, Long userId) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
         if (authorities.stream().noneMatch(authority -> authority.getAuthority().equals("normal"))) {
@@ -165,7 +166,7 @@ public class PostService {
 
         if (postOptional.isPresent()) {
             if(postOptional.get().getIsArchived()){
-                throw new InvalidAuthorityException();
+                throw new AccessDeniedException("The post is archived");
             }
             Post post = postOptional.get();
             PostReply newReply = new PostReply();
@@ -184,7 +185,7 @@ public class PostService {
 
     }
 
-    public void replyToReply(String postId, int idx, ReplyRequest subReply, Long userId) throws PostNotFoundException, InvalidAuthorityException {
+    public void replyToReply(String postId, int idx, ReplyRequest subReply, Long userId) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
         if (authorities.stream().noneMatch(authority -> authority.getAuthority().equals("normal"))) {
@@ -194,7 +195,7 @@ public class PostService {
 
         if (postOptional.isPresent()) {
             if(postOptional.get().getIsArchived()){
-                throw new InvalidAuthorityException();
+                throw new AccessDeniedException("The post is archived");
             }
             Post post = postOptional.get();
             PostReply reply = post.getPostReplies().get(idx);
